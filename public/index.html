@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adsoleo | Creator Shortlist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="app">
+    <div id="loader" class="loader-container">
+      <div class="spinner"></div>
+    </div>
+
+    <div id="error-view" class="view hidden">
+      <div class="card error-card">
+        <h2 id="error-title">Link Expired</h2>
+        <p id="error-message">This shortlist link is no longer active.</p>
+      </div>
+    </div>
+
+    <div id="success-view" class="view hidden">
+      <div class="card success-card">
+        <h2>Thank You!</h2>
+        <p>Your feedback has been submitted successfully.</p>
+        <button id="btn-back-home" class="btn primary-btn mt-4">Back to Shortlist</button>
+      </div>
+    </div>
+
+    <div id="main-view" class="view hidden">
+      <header class="app-header">
+        <h1 class="gradient-text">Adsoleo</h1>
+        <div class="project-info">
+          <h2 id="project-title" class="project-title">Project Name</h2>
+          <p id="project-meta" class="project-meta">Platform • Content Type</p>
+        </div>
+      </header>
+
+      <main class="content-container">
+        <div class="shortlist-header">
+          <h3>Shortlisted Creators</h3>
+          <p>Please review and provide your feedback.</p>
+        </div>
+
+        <div id="creators-grid" class="creators-grid">
+          <!-- Creators will be populated here -->
+        </div>
+      </main>
+    </div>
+
+    <!-- Profile Detail Modal -->
+    <div id="profile-modal" class="modal hidden">
+      <div class="modal-backdrop" id="modal-backdrop"></div>
+      <div class="modal-content glass-panel">
+        <button id="modal-close" class="modal-close">&times;</button>
+        <div class="modal-body" id="modal-body">
+          <!-- Populated dynamically -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn decision-btn reject-btn" data-decision="REJECTED">Reject</button>
+          <button class="btn decision-btn approve-btn" data-decision="APPROVED">Approve</button>
+          <button class="btn decision-btn comment-btn" id="btn-open-comment">Leave Comment</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comment Modal -->
+    <div id="comment-modal" class="modal hidden">
+      <div class="modal-backdrop" id="comment-modal-backdrop"></div>
+      <div class="modal-content glass-panel small-modal">
+        <button id="comment-modal-close" class="modal-close">&times;</button>
+        <div class="modal-body">
+          <h3>Leave a Comment</h3>
+          <textarea id="comment-text" placeholder="Type your comment here..." rows="4" class="custom-textarea"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn outline-btn" id="btn-cancel-comment">Cancel</button>
+          <button class="btn primary-btn" id="btn-submit-comment">Submit</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

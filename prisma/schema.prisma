@@ -1,0 +1,196 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  CREATOR
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum ProjectStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+enum ApplicationStatus {
+  PENDING
+  SELECTED
+  REJECTED
+  SENT_TO_CLIENT
+  CLIENT_APPROVED
+  CLIENT_REJECTED
+}
+
+enum DecisionType {
+  APPROVED
+  REJECTED
+  COMMENT_ONLY
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  phone         String?
+  passwordHash  String
+  role          Role      @default(CREATOR)
+  createdAt     DateTime  @default(now())
+  lastLoginAt   DateTime?
+
+  profile       CreatorProfile?
+  devices       Device[]
+  notifications Notification[]
+  applications  Application[] // Applications made by the creator
+  createdProjects Project[] // Projects created by the admin
+  createdViews  ClientView[]  // Client views created by the admin
+  passwordResetTokens PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique // Hashed token
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model CreatorProfile {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  publicName         String?
+  photoUrl           String?
+  bio                String?
+  country            String?
+  city               String?
+  categories         String[]
+  subCategories      String[]
+  languages          String[]
+  contentStyles      String[]
+  tiktokUrl          String?
+  tiktokUsername     String?
+  tiktokFollowers    Int      @default(0)
+  instagramUrl       String?
+  instagramUsername  String?
+  instagramFollowers Int      @default(0)
+  engagementRate     Float?
+  profileCompleted   Boolean  @default(false)
+  updatedAt          DateTime @updatedAt
+
+  media              CreatorMedia[]
+}
+
+model CreatorMedia {
+  id         String         @id @default(uuid())
+  creatorId  String
+  creator    CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  imageBytes Bytes
+  mimeType   String
+  type       MediaType
+  orderIndex Int            @default(0)
+}
+
+model Project {
+  id          String        @id @default(uuid())
+  title       String
+  description String
+  platform    String
+  contentType String
+  deadline    DateTime
+  status      ProjectStatus @default(DRAFT)
+  createdById String
+  createdBy   User          @relation(fields: [createdById], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  applications Application[]
+  clientViews  ClientView[]
+}
+
+model Application {
+  id           String            @id @default(uuid())
+  projectId    String
+  project      Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creatorId    String
+  creator      User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  message      String?
+  contentIdea  String?
+  availability String?
+  status       ApplicationStatus @default(PENDING)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  clientViews ClientViewCreator[]
+  feedbacks   ClientFeedback[]
+
+  @@unique([projectId, creatorId])
+}
+
+model ClientView {
+  id              String    @id @default(uuid())
+  projectId       String
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  token           String    @unique // 32 random bytes, base64url-encoded hashed in DB
+  clientEmail     String?
+  expiresAt       DateTime
+  deactivatedAt   DateTime?
+  reminderSentAt  DateTime?
+  createdById     String
+  createdBy       User      @relation(fields: [createdById], references: [id])
+  createdAt       DateTime  @default(now())
+
+  creators ClientViewCreator[]
+  feedback ClientFeedback[]
+}
+
+// Join table for selected shortlist
+model ClientViewCreator {
+  clientViewId  String
+  clientView    ClientView  @relation(fields: [clientViewId], references: [id], onDelete: Cascade)
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@id([clientViewId, applicationId])
+}
+
+model ClientFeedback {
+  id            String       @id @default(uuid())
+  clientViewId  String
+  clientView    ClientView   @relation(fields: [clientViewId], references: [id], onDelete: Cascade)
+  applicationId String
+  application   Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  decision      DecisionType
+  comment       String?
+  createdAt     DateTime     @default(now())
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String
+  payload   Json?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Device {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fcmToken  String   @unique
+  platform  String
+  createdAt DateTime @default(now())
+}
